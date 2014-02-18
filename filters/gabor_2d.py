@@ -65,7 +65,9 @@ def gabor_2d(shape, sigma0, xi, theta, slant=None, offset=None):
     gabor = np.fft.fftshift(raw_gabor.reshape(shape)) / (
         2 * np.pi * sigma0 * sigma0 / slant)
 
-    return gabor
+    # return transposed in order to be compatible with matlab version
+
+    return gabor.T
 
 
 if __name__ == "__main__":
