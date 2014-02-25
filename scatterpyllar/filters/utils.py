@@ -58,6 +58,41 @@ def evaluate_path(img, filter_bank, *args):
         return np.abs(filtered)
 
 
+def filter_panel(filter_bank, renormalize_l2=False, fov=None):
+
+    filters = np.fft.fftshift(
+        np.array(filter_bank['psi']['fil_list']),
+        axes=[1, 2])
+    if renormalize_l2:
+        filter_norms = np.sqrt(
+            (np.abs(filters.reshape(len(filters), -1)) ** 2).sum(axis=1))
+        filters /= filter_norms[:, np.newaxis, np.newaxis]
+    if fov is None:
+        fov = (slice(0, None), slice(0, None))
+    full_slice = [slice(None)] + list(fov)
+    filters = filters[full_slice]
+    L = filter_bank["L"]
+    J = filter_bank["J"]
+
+    panel = filters.reshape(
+        J, L, filters.shape[1], filters.shape[2]
+        ).transpose(0, 2, 1, 3).reshape(J * filters.shape[1], -1)
+
+    return panel
+
+
+def show_filters(filter_bank, renormalize_l2=False, fov=None):
+    panel = filter_panel(filter_bank, fov=fov, 
+                         renormalize_l2=renormalize_l2)
+    re = np.real(panel)
+    im = np.imag(panel)
+    import pylab as pl
+    pl.subplot(1, 2, 1)
+    pl.imshow(re, interpolation="nearest")
+    pl.subplot(1, 2, 2)
+    pl.imshow(im, interpolation="nearest")
+
+
 if __name__ == "__main__":
     # test fftconvolve
     from scipy.misc import lena

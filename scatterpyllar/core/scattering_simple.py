@@ -1,6 +1,6 @@
 import numpy as np
 
-from .filters.utils import fft_convolve
+from ..filters.utils import fft_convolve
 
 
 def scattering_layer_0(imgs, filter_bank, subsample=0):
