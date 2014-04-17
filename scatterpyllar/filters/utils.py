@@ -2,6 +2,62 @@
 
 import numpy as np
 from scipy import ndimage
+import numbers
+
+
+def pad(images, before=0, after=None):
+    """Pads an ndarray
+    
+    Parameters
+    ----------
+
+    before : list or array or int
+        indicates how much to pad in front by for each axis
+
+    after : list or array or int
+        indicates how much to pad behind for each axis
+        default is the same as indicated by before
+
+    Note: negative values lead to cropping
+"""
+    if after is None:
+        after = before
+
+    if isinstance(before, numbers.Number):
+        before = [before]
+
+    if isinstance(after, numbers.Number):
+        after = [after]
+
+    if len(before) == 1:
+        before = before * len(images.shape)
+    if len(after) == 1:
+        after = after * len(images.shape)
+
+    before = np.array(before).astype(int)
+    after = np.array(after).astype(int)
+
+    if (before <= 0).all() and (after <= 0).all():
+        slices = [slice(-b, a) for (b, a) in zip(before, after)]
+        return images[slices].copy()  # not necessary to copy but consistent
+
+    out_shape = np.array(images.shape) + before + after
+    out_arr = np.zeros(out_shape)
+
+    padding_before = np.maximum(before, 0)
+    padding_after = np.minimum(-after, 0)
+
+    cropping_before = np.maximum(-before, 0)
+    cropping_after = np.minimum(after, 0)
+
+    out_arr_slices = [slice(b, a) for b, a in zip(padding_before, 
+                                                  padding_after)]
+    crop_slices = [slice(b, a or None) for b, a in zip(cropping_before,
+                                                       cropping_after)]
+
+    out_arr[out_arr_slices] = images[crop_slices]
+
+    return out_arr
 
 
 def rotation_matrix_2d(angle):
